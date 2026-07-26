@@ -14,15 +14,18 @@ The pipeline:
     5. Validate the SQL through 4-layer safety pipeline
     6. Execute on read-only database
     7. LLM Call #2: question + SQL + actual rows → English answer
-    8. Return everything (answer + SQL + rows + assumptions)
+    8. Return everything (answer + SQL + rows + assumptions + latency)
 
 Why two LLM calls instead of one?
     One call: Question → LLM → "Rock made $850" (hallucinated number)
     Two calls: Question → LLM → SQL → Validate → Execute → Real data → LLM → "Rock, $826.65"
     The gap between calls is where validation + real data happens.
+
+Phase 7: Added latency tracking for observability.
 """
 
 import re
+import time
 from app.database import Database
 from app.sql_validator import validate_sql
 from app.llm import call_llm
@@ -135,29 +138,38 @@ class QueryEngine:
             self._schema = self.db.get_schema()
         return self._schema
 
-    def process_question(self, question: str) -> dict:
+    def process_question(self, question: str, preview_mode: bool = False) -> dict:
         """
         Process a natural language question through the full pipeline.
 
         Args:
             question: The user's natural language question
+            preview_mode: If True, only generate and validate SQL without execution (Phase 7)
 
         Returns:
-            dict with: answer, sql, rows, row_count, assumptions, error
+            dict with: answer, sql, rows, row_count, assumptions, error, latency_ms
         """
+        start_time = time.time()
+        latency_breakdown = {}
+        
         try:
             # Step 1: Get the schema
+            schema_start = time.time()
             schema = self._get_schema()
+            latency_breakdown['schema_load_ms'] = int((time.time() - schema_start) * 1000)
 
             # Step 2: LLM Call #1 — Generate SQL from question + schema
+            llm1_start = time.time()
             sql_prompt = SQL_GENERATION_PROMPT.format(
                 schema=schema, question=question
             )
             llm_response = call_llm(sql_prompt, temperature=0.0)
+            latency_breakdown['llm_sql_generation_ms'] = int((time.time() - llm1_start) * 1000)
 
             # Step 3: Check if UNANSWERABLE
             if self._is_unanswerable(llm_response):
                 reason = self._extract_unanswerable_reason(llm_response)
+                total_ms = int((time.time() - start_time) * 1000)
                 return {
                     "answer": f"This question cannot be answered with the available data. {reason}",
                     "sql": None,
@@ -165,6 +177,9 @@ class QueryEngine:
                     "row_count": None,
                     "assumptions": None,
                     "error": None,
+                    "latency_ms": total_ms,
+                    "latency_breakdown": latency_breakdown,
+                    "preview_only": preview_mode,
                 }
 
             # Step 4: Extract SQL and any assumptions
@@ -172,8 +187,12 @@ class QueryEngine:
             assumptions = self._extract_assumptions(llm_response)
 
             # Step 5: Validate the SQL (4-layer safety pipeline)
+            validation_start = time.time()
             validation = validate_sql(sql)
+            latency_breakdown['sql_validation_ms'] = int((time.time() - validation_start) * 1000)
+            
             if not validation["valid"]:
+                total_ms = int((time.time() - start_time) * 1000)
                 return {
                     "answer": f"The generated query was blocked by safety validation: {validation['error']}",
                     "sql": sql,
@@ -181,15 +200,41 @@ class QueryEngine:
                     "row_count": None,
                     "assumptions": assumptions,
                     "error": validation["error"],
+                    "latency_ms": total_ms,
+                    "latency_breakdown": latency_breakdown,
+                    "preview_only": preview_mode,
                 }
 
             # Use the (possibly modified) SQL from validator (may have LIMIT added)
             safe_sql = validation["sql"]
 
+            # Phase 7: Preview mode - return SQL without execution
+            if preview_mode:
+                total_ms = int((time.time() - start_time) * 1000)
+                preview_answer = f"Preview: Here's the SQL that would be executed to answer your question."
+                if assumptions:
+                    preview_answer = f"Preview (assuming {assumptions}): Here's the SQL that would be executed."
+                
+                return {
+                    "answer": preview_answer,
+                    "sql": safe_sql,
+                    "rows": None,
+                    "row_count": None,
+                    "assumptions": assumptions,
+                    "error": None,
+                    "latency_ms": total_ms,
+                    "latency_breakdown": latency_breakdown,
+                    "preview_only": True,
+                }
+
             # Step 6: Execute on read-only database
+            db_start = time.time()
             try:
                 result = self.db.execute_query(safe_sql)
+                latency_breakdown['database_execution_ms'] = int((time.time() - db_start) * 1000)
             except Exception as e:
+                latency_breakdown['database_execution_ms'] = int((time.time() - db_start) * 1000)
+                total_ms = int((time.time() - start_time) * 1000)
                 return {
                     "answer": f"The SQL query failed to execute: {str(e)}",
                     "sql": safe_sql,
@@ -197,9 +242,13 @@ class QueryEngine:
                     "row_count": None,
                     "assumptions": assumptions,
                     "error": str(e),
+                    "latency_ms": total_ms,
+                    "latency_breakdown": latency_breakdown,
+                    "preview_only": preview_mode,
                 }
 
             # Step 7: LLM Call #2 — Generate English answer from real data
+            llm2_start = time.time()
             assumption_text = (
                 f"ASSUMPTION MADE: {assumptions}" if assumptions else ""
             )
@@ -210,8 +259,10 @@ class QueryEngine:
                 assumption_text=assumption_text,
             )
             answer = call_llm(answer_prompt, temperature=0.3)
+            latency_breakdown['llm_answer_generation_ms'] = int((time.time() - llm2_start) * 1000)
 
             # Step 8: Return everything
+            total_ms = int((time.time() - start_time) * 1000)
             return {
                 "answer": answer,
                 "sql": safe_sql,
@@ -219,9 +270,13 @@ class QueryEngine:
                 "row_count": result["row_count"],
                 "assumptions": assumptions,
                 "error": None,
+                "latency_ms": total_ms,
+                "latency_breakdown": latency_breakdown,
+                "preview_only": preview_mode,
             }
 
         except Exception as e:
+            total_ms = int((time.time() - start_time) * 1000)
             return {
                 "answer": f"An unexpected error occurred: {str(e)}",
                 "sql": None,
@@ -229,6 +284,9 @@ class QueryEngine:
                 "row_count": None,
                 "assumptions": None,
                 "error": str(e),
+                "latency_ms": total_ms,
+                "latency_breakdown": latency_breakdown if 'latency_breakdown' in locals() else {},
+                "preview_only": preview_mode,
             }
 
     # ─────────────────────────────────────────────

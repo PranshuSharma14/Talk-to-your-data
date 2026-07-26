@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Phase 7: Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         /* ─────────────── DESIGN TOKENS ─────────────── */
         :root {
@@ -334,6 +336,44 @@
             margin-bottom: 12px;
         }
 
+        /* ─────────────── LATENCY INFO (Phase 7) ─────────────── */
+        .latency-info {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            margin-top: 10px;
+            padding: 6px 10px;
+            background: rgba(102, 126, 234, 0.08);
+            border-left: 2px solid var(--accent-primary);
+            border-radius: 4px;
+        }
+
+        /* ─────────────── CHART CONTAINER (Phase 7) ─────────────── */
+        .chart-container {
+            margin-bottom: 16px;
+        }
+        .chart-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-accent);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .chart-wrapper {
+            background: var(--bg-code);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            border: 1px solid var(--border-subtle);
+            position: relative;
+            height: 250px;
+        }
+        .chart-wrapper canvas {
+            max-width: 100% !important;
+            height: auto !important;
+        }
+
         /* ─────────────── EVIDENCE PANELS ─────────────── */
         .evidence {
             margin-top: 14px;
@@ -557,6 +597,42 @@
             font-weight: 400;
         }
 
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .preview-btn {
+            height: 48px;
+            padding: 0 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-md);
+            color: var(--text-accent);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex-shrink: 0;
+            font-family: var(--font-sans);
+        }
+        .preview-btn:hover:not(:disabled) {
+            background: var(--bg-input);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+        .preview-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        .preview-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
         .send-btn {
             width: 48px; height: 48px;
             background: var(--bg-gradient-1);
@@ -689,14 +765,19 @@
         <div class="input-field-wrapper">
             <textarea id="questionInput" rows="1" placeholder="Ask a question about the Chinook database..." autofocus></textarea>
         </div>
-        <button class="send-btn" id="sendBtn" onclick="sendQuestion()" title="Send message">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13"></line>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-            </svg>
-        </button>
+        <div class="button-group">
+            <button class="preview-btn" id="previewBtn" onclick="previewQuery()" title="Preview SQL only">
+                👁️ Preview
+            </button>
+            <button class="send-btn" id="sendBtn" onclick="sendQuestion()" title="Send message">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
     </div>
-    <div class="input-hint">Press <strong>Enter</strong> to send • <strong>Shift+Enter</strong> for new line</div>
+    <div class="input-hint">Press <strong>Enter</strong> to send • <strong>Shift+Enter</strong> for new line • <strong>Preview</strong> shows SQL only</div>
 </footer>
 
 <script>
@@ -816,11 +897,29 @@
             assumptionHTML = `<div class="assumption-badge">⚡ Assumption: ${escapeHtml(data.assumptions)}</div>`;
         }
 
+        // Phase 7: Latency tracking display
+        let latencyHTML = '';
+        if (data.latency_ms) {
+            latencyHTML = `<div class="latency-info">⏱️ ${data.latency_ms}ms total`;
+            if (data.latency_breakdown) {
+                const breakdown = data.latency_breakdown;
+                const parts = [];
+                if (breakdown.llm_sql_generation_ms) parts.push(`SQL gen: ${breakdown.llm_sql_generation_ms}ms`);
+                if (breakdown.database_execution_ms) parts.push(`DB: ${breakdown.database_execution_ms}ms`);
+                if (breakdown.llm_answer_generation_ms) parts.push(`Answer gen: ${breakdown.llm_answer_generation_ms}ms`);
+                if (parts.length > 0) {
+                    latencyHTML += ` (${parts.join(', ')})`;
+                }
+            }
+            latencyHTML += '</div>';
+        }
+
         div.innerHTML = `
             <div class="avatar ai">🤖</div>
             <div class="bubble ai">
                 ${assumptionHTML}
                 <div class="answer-text">${formatAnswer(data.answer)}</div>
+                ${latencyHTML}
                 ${evidenceHTML}
             </div>
         `;
@@ -828,7 +927,7 @@
         scrollToBottom();
     }
 
-    // ─────────── Build results table ───────────
+    // ─────────── Build results table with charts (Phase 7) ───────────
     function buildTable(rows, rowCount) {
         if (!rows || rows.length === 0) return '';
 
@@ -837,7 +936,17 @@
             return `<div class="row-count">Result: ${rows[0][0]} (1 row)</div>`;
         }
 
-        let html = '<div><div class="sql-label">Results</div><div class="results-table-wrapper"><table class="results-table"><thead><tr>';
+        // Phase 7: Detect if data is suitable for charting
+        const chartHtml = generateChartIfSuitable(rows);
+
+        let html = '<div><div class="sql-label">Results</div>';
+        
+        // Add chart if generated
+        if (chartHtml) {
+            html += chartHtml;
+        }
+        
+        html += '<div class="results-table-wrapper"><table class="results-table"><thead><tr>';
 
         // Column headers — use index if we don't have names
         const numCols = rows[0].length;
@@ -864,6 +973,113 @@
         }
         html += '</div>';
         return html;
+    }
+
+    // ─────────── Phase 7: Generate chart if data is suitable ───────────
+    function generateChartIfSuitable(rows) {
+        if (!rows || rows.length < 2 || rows[0].length !== 2) return null;
+        
+        // Check if we have label-value pairs (good for charts)
+        let hasValidData = true;
+        const labels = [];
+        const values = [];
+        
+        for (const row of rows) {
+            if (row.length !== 2) {
+                hasValidData = false;
+                break;
+            }
+            
+            const label = String(row[0]);
+            const value = parseFloat(row[1]);
+            
+            if (isNaN(value)) {
+                hasValidData = false;
+                break;
+            }
+            
+            labels.push(label);
+            values.push(value);
+        }
+        
+        if (!hasValidData || values.length > 10) return null; // Max 10 items for readability
+        
+        const chartId = 'chart-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        
+        // Create chart container and schedule rendering
+        setTimeout(() => renderChart(chartId, labels, values), 100);
+        
+        return `
+            <div class="chart-container">
+                <div class="chart-label">📊 Data Visualization</div>
+                <div class="chart-wrapper">
+                    <canvas id="${chartId}" width="400" height="200"></canvas>
+                </div>
+            </div>
+        `;
+    }
+
+    // ─────────── Phase 7: Render chart with Chart.js ───────────
+    function renderChart(chartId, labels, values) {
+        const canvas = document.getElementById(chartId);
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        
+        // Dark theme colors for charts
+        const colors = [
+            'rgba(102, 126, 234, 0.8)',
+            'rgba(118, 75, 162, 0.8)', 
+            'rgba(16, 185, 129, 0.8)',
+            'rgba(245, 158, 11, 0.8)',
+            'rgba(239, 68, 68, 0.8)',
+            'rgba(139, 92, 246, 0.8)',
+            'rgba(236, 72, 153, 0.8)',
+            'rgba(6, 182, 212, 0.8)',
+            'rgba(34, 197, 94, 0.8)',
+            'rgba(251, 146, 60, 0.8)'
+        ];
+        
+        new Chart(ctx, {
+            type: 'bar', // Start with bar chart (good for most data)
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: colors.slice(0, values.length),
+                    borderColor: colors.slice(0, values.length).map(c => c.replace('0.8', '1')),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(45, 45, 85, 0.3)'
+                        },
+                        ticks: {
+                            color: 'rgba(160, 160, 192, 0.8)',
+                            maxRotation: 45
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(45, 45, 85, 0.3)'
+                        },
+                        ticks: {
+                            color: 'rgba(160, 160, 192, 0.8)'
+                        }
+                    }
+                }
+            }
+        });
     }
 
     // ─────────── Error message ───────────
@@ -916,6 +1132,61 @@
             btn.textContent = 'Copied!';
             setTimeout(() => btn.textContent = 'Copy', 1500);
         });
+    }
+
+    // ─────────── Preview Query (Phase 7) ───────────
+    async function previewQuery() {
+        const question = questionInput.value.trim();
+        if (!question || isWaiting) return;
+
+        if (welcome) welcome.style.display = 'none';
+
+        // Add user message with preview badge
+        const div = document.createElement('div');
+        div.className = 'message user';
+        div.innerHTML = `
+            <div class="avatar user">👤</div>
+            <div class="bubble user">
+                <div style="font-size:11px; opacity:0.8; margin-bottom:4px;">👁️ PREVIEW MODE</div>
+                ${escapeHtml(question)}
+            </div>
+        `;
+        messagesWrapper.appendChild(div);
+        scrollToBottom();
+
+        questionInput.value = '';
+        questionInput.style.height = 'auto';
+
+        isWaiting = true;
+        sendBtn.disabled = true;
+        const previewBtn = document.getElementById('previewBtn');
+        if (previewBtn) previewBtn.disabled = true;
+        const typingEl = showTyping();
+
+        try {
+            const response = await fetch('/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question, preview_mode: true }),
+            });
+
+            const data = await response.json();
+            removeTyping(typingEl);
+
+            if (response.ok) {
+                addAIMessage(data);
+            } else {
+                addErrorMessage(data.detail || 'Something went wrong.');
+            }
+        } catch (err) {
+            removeTyping(typingEl);
+            addErrorMessage('Could not connect to server.');
+        } finally {
+            isWaiting = false;
+            sendBtn.disabled = false;
+            if (previewBtn) previewBtn.disabled = false;
+            questionInput.focus();
+        }
     }
 
     // ─────────── Utilities ───────────

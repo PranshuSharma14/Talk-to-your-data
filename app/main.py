@@ -55,13 +55,15 @@ async def ask_question(request: QuestionRequest):
     The system will:
     1. Generate SQL from your question using Gemini
     2. Validate the SQL for safety (4-layer defense)
-    3. Execute it on the read-only database
+    3. Execute it on the read-only database (unless preview_mode=True)
     4. Generate a natural language answer from the real data
+
+    Phase 7: Supports preview_mode to only generate SQL without execution.
 
     Returns the answer, the SQL query, and the raw result rows.
     """
     try:
-        result = engine.process_question(request.question)
+        result = engine.process_question(request.question, preview_mode=request.preview_mode)
         return AnswerResponse(**result)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

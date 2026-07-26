@@ -20,6 +20,10 @@ class QuestionRequest(BaseModel):
         description="The natural language question to ask about the database",
         examples=["How many customers are there?"],
     )
+    preview_mode: bool = Field(
+        default=False,
+        description="If true, only generate SQL without executing (Phase 7 feature)",
+    )
 
 
 class AnswerResponse(BaseModel):
@@ -47,4 +51,16 @@ class AnswerResponse(BaseModel):
     error: str | None = Field(
         default=None,
         description="Error message if something went wrong (None if successful)",
+    )
+    latency_ms: int | None = Field(
+        default=None,
+        description="Total request latency in milliseconds (Phase 7 feature)",
+    )
+    latency_breakdown: dict | None = Field(
+        default=None,
+        description="Detailed latency breakdown by operation (Phase 7 feature)",
+    )
+    preview_only: bool = Field(
+        default=False,
+        description="True if this was a preview-only request (Phase 7 feature)",
     )
