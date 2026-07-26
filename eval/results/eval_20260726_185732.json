@@ -1,0 +1,409 @@
+{
+  "timestamp": "20260726_185732",
+  "total": 15,
+  "passed": 8,
+  "results": [
+    {
+      "question_id": "Q1",
+      "question": "How many customers are there?",
+      "category": "simple_lookup",
+      "response": {
+        "answer": "There are 59 customers.",
+        "sql": "SELECT COUNT(*) FROM Customer LIMIT 500",
+        "rows": [
+          [
+            59
+          ]
+        ],
+        "row_count": 1,
+        "assumptions": null,
+        "error": null
+      },
+      "passed": true,
+      "reason": "Correct: 59.0",
+      "failure_mode": "none"
+    },
+    {
+      "question_id": "Q2",
+      "question": "List the 5 longest tracks by duration.",
+      "category": "sort_limit",
+      "response": {
+        "answer": "The 5 longest tracks by duration are:\n\n1. **Occupation / Precipice** \u2013 5,286,953 milliseconds\n2. **Through a Looking Glass** \u2013 5,088,838 milliseconds\n3. **Greetings from Earth, Pt. 1** \u2013 2,960,293 milliseconds\n4. **The Man With Nine Lives** \u2013 2,956,998 milliseconds\n5. **Battlestar Galactica, Pt. 2** \u2013 2,956,081 milliseconds",
+        "sql": "SELECT t.Name, t.Milliseconds \nFROM Track t \nORDER BY t.Milliseconds DESC \nLIMIT 5",
+        "rows": [
+          [
+            "Occupation / Precipice",
+            5286953
+          ],
+          [
+            "Through a Looking Glass",
+            5088838
+          ],
+          [
+            "Greetings from Earth, Pt. 1",
+            2960293
+          ],
+          [
+            "The Man With Nine Lives",
+            2956998
+          ],
+          [
+            "Battlestar Galactica, Pt. 2",
+            2956081
+          ]
+        ],
+        "row_count": 5,
+        "assumptions": null,
+        "error": null
+      },
+      "passed": false,
+      "reason": "Only found 2/5 required items",
+      "failure_mode": "none"
+    },
+    {
+      "question_id": "Q3",
+      "question": "What is the total revenue by country?",
+      "category": "group_aggregate",
+      "response": {
+        "answer": "Interpreting \"country\" as the billing country from the Invoice table, the total revenue by country is as follows:\n\n*   **USA**: $523.06\n*   **Canada**: $303.96\n*   **France**: $195.10\n*   **Brazil**: $190.10\n*   **Germany**: $156.48\n*   **United Kingdom**: $112.86\n*   **Czech Republic**: $90.24\n*   **Portugal**: $77.24\n*   **India**: $75.26\n*   **Chile**: $46.62\n*   **Ireland**: $45.62\n*   **Hungary**: $45.62\n*   **Austria**: $42.62\n*   **Finland**: $41.62\n*   **Netherlands**: $40.62\n*   **Norway**: $39.62\n*   **Sweden**: $38.62\n*   **Spain**: $37.62\n*   **Poland**: $37.62\n*   **Italy**: $37.62\n*   **Denmark**: $37.62\n*   **Belgium**: $37.62\n*   **Australia**: $37.62\n*   **Argentina**: $37.62",
+        "sql": "-- ASSUMPTION: Interpreting \"country\" as the billing country from the Invoice table\nSELECT i.BillingCountry AS Country, SUM(i.Total) AS TotalRevenue\nFROM Invoice i\nGROUP BY i.BillingCountry\nORDER BY TotalRevenue DESC LIMIT 500",
+        "rows": [
+          [
+            "USA",
+            523.06
+          ],
+          [
+            "Canada",
+            303.96
+          ],
+          [
+            "France",
+            195.1
+          ],
+          [
+            "Brazil",
+            190.1
+          ],
+          [
+            "Germany",
+            156.48
+          ],
+          [
+            "United Kingdom",
+            112.86
+          ],
+          [
+            "Czech Republic",
+            90.24
+          ],
+          [
+            "Portugal",
+            77.24
+          ],
+          [
+            "India",
+            75.26
+          ],
+          [
+            "Chile",
+            46.62
+          ],
+          [
+            "Ireland",
+            45.62
+          ],
+          [
+            "Hungary",
+            45.62
+          ],
+          [
+            "Austria",
+            42.62
+          ],
+          [
+            "Finland",
+            41.62
+          ],
+          [
+            "Netherlands",
+            40.62
+          ],
+          [
+            "Norway",
+            39.62
+          ],
+          [
+            "Sweden",
+            38.62
+          ],
+          [
+            "Spain",
+            37.62
+          ],
+          [
+            "Poland",
+            37.62
+          ],
+          [
+            "Italy",
+            37.62
+          ],
+          [
+            "Denmark",
+            37.62
+          ],
+          [
+            "Belgium",
+            37.62
+          ],
+          [
+            "Australia",
+            37.62
+          ],
+          [
+            "Argentina",
+            37.62
+          ]
+        ],
+        "row_count": 24,
+        "assumptions": "Interpreting \"country\" as the billing country from the Invoice table",
+        "error": null
+      },
+      "passed": true,
+      "reason": "Found 3/3 expected items",
+      "failure_mode": "none"
+    },
+    {
+      "question_id": "Q4",
+      "question": "Which genre has the most tracks?",
+      "category": "join_aggregate",
+      "response": {
+        "answer": "The genre with the most tracks is Rock, with a total of 1,297 tracks.",
+        "sql": "SELECT g.Name, COUNT(t.TrackId) AS TrackCount FROM Genre g JOIN Track t ON g.GenreId = t.GenreId GROUP BY g.GenreId, g.Name ORDER BY TrackCount DESC LIMIT 1",
+        "rows": [
+          [
+            "Rock",
+            1297
+          ]
+        ],
+        "row_count": 1,
+        "assumptions": null,
+        "error": null
+      },
+      "passed": true,
+      "reason": "Found: Rock",
+      "failure_mode": "none"
+    },
+    {
+      "question_id": "Q5",
+      "question": "What are the top 3 albums with the most tracks?",
+      "category": "group_aggregate",
+      "response": {
+        "answer": "The top 3 albums with the most tracks are:\n\n1. **Greatest Hits** with 57 tracks\n2. **Minha Historia** with 34 tracks\n3. **Unplugged** with 30 tracks",
+        "sql": "SELECT a.Title, COUNT(t.TrackId) AS TrackCount\nFROM Album a\nJOIN Track t ON a.AlbumId = t.AlbumId\nGROUP BY a.AlbumId, a.Title\nORDER BY TrackCount DESC\nLIMIT 3",
+        "rows": [
+          [
+            "Greatest Hits",
+            57
+          ],
+          [
+            "Minha Historia",
+            34
+          ],
+          [
+            "Unplugged",
+            30
+          ]
+        ],
+        "row_count": 3,
+        "assumptions": null,
+        "error": null
+      },
+      "passed": false,
+      "reason": "Only found 1/3 required items",
+      "failure_mode": "none"
+    },
+    {
+      "question_id": "Q6",
+      "question": "How much revenue was generated in 2013?",
+      "category": "filter_aggregate",
+      "response": {
+        "answer": "Assuming \"revenue generated in 2013\" refers to the sum of invoice totals with an invoice date in the year 2013, no matching data was found in the database.",
+        "sql": "SELECT SUM(i.Total) AS TotalRevenue\nFROM Invoice i\nWHERE strftime('%Y', i.InvoiceDate) = '2013' LIMIT 500",
+        "rows": [
+          [
+            null
+          ]
+        ],
+        "row_count": 1,
+        "assumptions": null,
+        "error": null
+      },
+      "passed": false,
+      "reason": "Expected 450.58\u00b11, got 2013.0",
+      "failure_mode": "none"
+    },
+    {
+      "question_id": "Q7",
+      "question": "Which customer has spent the most money?",
+      "category": "join_aggregate",
+      "response": {
+        "answer": "Interpreting \"spent the most money\" as the sum of all invoice totals for each customer, Helena Hol\u00fd (Customer ID 6) has spent the most money, with a total of $49.62.",
+        "sql": "-- ASSUMPTION: Interpreting \"spent the most money\" as the sum of all invoice totals for each customer.\nSELECT c.CustomerId, c.FirstName, c.LastName, SUM(i.Total) AS TotalSpent\nFROM Customer c\nJOIN Invoice i ON c.CustomerId = i.CustomerId\nGROUP BY c.CustomerId, c.FirstName, c.LastName\nORDER BY TotalSpent DESC\nLIMIT 1",
+        "rows": [
+          [
+            6,
+            "Helena",
+            "Hol\u00fd",
+            49.62
+          ]
+        ],
+        "row_count": 1,
+        "assumptions": "Interpreting \"spent the most money\" as the sum of all invoice totals for each customer.",
+        "error": null
+      },
+      "passed": true,
+      "reason": "Found: Helena Hol\u00fd",
+      "failure_mode": "value_format_mismatch"
+    },
+    {
+      "question_id": "Q8",
+      "question": "How many employees are there in the Sales department?",
+      "category": "filter_aggregate",
+      "response": {
+        "answer": "Interpreting the \"Sales department\" as employees whose job title contains \"Sales\", there are 4 employees.",
+        "sql": "-- ASSUMPTION: Interpreting \"Sales department\" as employees whose Title contains 'Sales'\nSELECT COUNT(e.EmployeeId)\nFROM Employee e\nWHERE e.Title LIKE '%Sales%' LIMIT 500",
+        "rows": [
+          [
+            4
+          ]
+        ],
+        "row_count": 1,
+        "assumptions": "Interpreting \"Sales department\" as employees whose Title contains 'Sales'",
+        "error": null
+      },
+      "passed": false,
+      "reason": "Expected 3\u00b10, got 4.0",
+      "failure_mode": "none"
+    },
+    {
+      "question_id": "Q9",
+      "question": "Who is our best customer?",
+      "category": "ambiguous",
+      "response": {
+        "answer": "Interpreting \"best customer\" as the customer with the highest total spending, our best customer is Helena Hol\u00fd (Customer ID 6) with a total spending of 49.62.",
+        "sql": "-- ASSUMPTION: Interpreting \"best customer\" as the customer with the highest total spending (sum of Invoice.Total).\nSELECT c.CustomerId, c.FirstName, c.LastName, SUM(i.Total) AS TotalSpending\nFROM Customer AS c\nJOIN Invoice AS i ON c.CustomerId = i.CustomerId\nGROUP BY c.CustomerId, c.FirstName, c.LastName\nORDER BY TotalSpending DESC\nLIMIT 1",
+        "rows": [
+          [
+            6,
+            "Helena",
+            "Hol\u00fd",
+            49.62
+          ]
+        ],
+        "row_count": 1,
+        "assumptions": "Interpreting \"best customer\" as the customer with the highest total spending (sum of Invoice.Total).",
+        "error": null
+      },
+      "passed": true,
+      "reason": "Assumption stated",
+      "failure_mode": "none"
+    },
+    {
+      "question_id": "Q10",
+      "question": "What is the profit margin on each album?",
+      "category": "unanswerable",
+      "response": {
+        "answer": "This question cannot be answered with the available data. The database does not contain information about the cost of tracks or albums, which is required to calculate profit margins. We only have selling prices (UnitPrice) and sales totals.",
+        "sql": null,
+        "rows": null,
+        "row_count": null,
+        "assumptions": null,
+        "error": null
+      },
+      "passed": true,
+      "reason": "Correctly declined",
+      "failure_mode": "none"
+    },
+    {
+      "question_id": "Q11",
+      "question": "How many tracks were streamed last month?",
+      "category": "unanswerable",
+      "response": {
+        "answer": "This question cannot be answered with the available data. The database does not contain any information about streaming counts, plays, or downloads of tracks, nor does it track streaming history over time.",
+        "sql": null,
+        "rows": null,
+        "row_count": null,
+        "assumptions": null,
+        "error": null
+      },
+      "passed": true,
+      "reason": "Correctly declined",
+      "failure_mode": "none"
+    },
+    {
+      "question_id": "Q12",
+      "question": "Which country has the most customers?",
+      "category": "group_aggregate",
+      "response": {
+        "answer": "An unexpected error occurred: RATE_LIMIT_EXCEEDED: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 59.995552591s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n  quota_metric: \"generativelanguage.googleapis.com/generate_content_free_tier_requests\"\n  quota_id: \"GenerateRequestsPerDayPerProjectPerModel-FreeTier\"\n  quota_dimensions {\n    key: \"model\"\n    value: \"gemini-3.5-flash\"\n  }\n  quota_dimensions {\n    key: \"location\"\n    value: \"global\"\n  }\n  quota_value: 20\n}\n, retry_delay {\n  seconds: 59\n}\n]",
+        "sql": null,
+        "rows": null,
+        "row_count": null,
+        "assumptions": null,
+        "error": "RATE_LIMIT_EXCEEDED: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 59.995552591s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n  quota_metric: \"generativelanguage.googleapis.com/generate_content_free_tier_requests\"\n  quota_id: \"GenerateRequestsPerDayPerProjectPerModel-FreeTier\"\n  quota_dimensions {\n    key: \"model\"\n    value: \"gemini-3.5-flash\"\n  }\n  quota_dimensions {\n    key: \"location\"\n    value: \"global\"\n  }\n  quota_value: 20\n}\n, retry_delay {\n  seconds: 59\n}\n]"
+      },
+      "passed": true,
+      "reason": "Found: USA",
+      "failure_mode": "none"
+    },
+    {
+      "question_id": "Q13",
+      "question": "How many Rock genre tracks are there?",
+      "category": "filter_aggregate",
+      "response": {
+        "answer": "An unexpected error occurred: RATE_LIMIT_EXCEEDED: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 29.16731788s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n  quota_metric: \"generativelanguage.googleapis.com/generate_content_free_tier_requests\"\n  quota_id: \"GenerateRequestsPerDayPerProjectPerModel-FreeTier\"\n  quota_dimensions {\n    key: \"model\"\n    value: \"gemini-3.5-flash\"\n  }\n  quota_dimensions {\n    key: \"location\"\n    value: \"global\"\n  }\n  quota_value: 20\n}\n, retry_delay {\n  seconds: 29\n}\n]",
+        "sql": null,
+        "rows": null,
+        "row_count": null,
+        "assumptions": null,
+        "error": "RATE_LIMIT_EXCEEDED: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 29.16731788s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n  quota_metric: \"generativelanguage.googleapis.com/generate_content_free_tier_requests\"\n  quota_id: \"GenerateRequestsPerDayPerProjectPerModel-FreeTier\"\n  quota_dimensions {\n    key: \"model\"\n    value: \"gemini-3.5-flash\"\n  }\n  quota_dimensions {\n    key: \"location\"\n    value: \"global\"\n  }\n  quota_value: 20\n}\n, retry_delay {\n  seconds: 29\n}\n]"
+      },
+      "passed": false,
+      "reason": "Expected 1297\u00b10, got 429.0",
+      "failure_mode": "none"
+    },
+    {
+      "question_id": "Q14",
+      "question": "What is the average track length in minutes?",
+      "category": "calculation",
+      "response": {
+        "answer": "An unexpected error occurred: RATE_LIMIT_EXCEEDED: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 58.264729953s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n  quota_metric: \"generativelanguage.googleapis.com/generate_content_free_tier_requests\"\n  quota_id: \"GenerateRequestsPerDayPerProjectPerModel-FreeTier\"\n  quota_dimensions {\n    key: \"model\"\n    value: \"gemini-3.5-flash\"\n  }\n  quota_dimensions {\n    key: \"location\"\n    value: \"global\"\n  }\n  quota_value: 20\n}\n, retry_delay {\n  seconds: 58\n}\n]",
+        "sql": null,
+        "rows": null,
+        "row_count": null,
+        "assumptions": null,
+        "error": "RATE_LIMIT_EXCEEDED: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 58.264729953s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n  quota_metric: \"generativelanguage.googleapis.com/generate_content_free_tier_requests\"\n  quota_id: \"GenerateRequestsPerDayPerProjectPerModel-FreeTier\"\n  quota_dimensions {\n    key: \"model\"\n    value: \"gemini-3.5-flash\"\n  }\n  quota_dimensions {\n    key: \"location\"\n    value: \"global\"\n  }\n  quota_value: 20\n}\n, retry_delay {\n  seconds: 58\n}\n]"
+      },
+      "passed": false,
+      "reason": "Expected 6.5\u00b10.5, got 429.0",
+      "failure_mode": "none"
+    },
+    {
+      "question_id": "Q15",
+      "question": "How many customers don't have a company listed?",
+      "category": "null_handling",
+      "response": {
+        "answer": "An unexpected error occurred: RATE_LIMIT_EXCEEDED: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 27.441762128s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n  quota_metric: \"generativelanguage.googleapis.com/generate_content_free_tier_requests\"\n  quota_id: \"GenerateRequestsPerDayPerProjectPerModel-FreeTier\"\n  quota_dimensions {\n    key: \"model\"\n    value: \"gemini-3.5-flash\"\n  }\n  quota_dimensions {\n    key: \"location\"\n    value: \"global\"\n  }\n  quota_value: 20\n}\n, retry_delay {\n  seconds: 27\n}\n]",
+        "sql": null,
+        "rows": null,
+        "row_count": null,
+        "assumptions": null,
+        "error": "RATE_LIMIT_EXCEEDED: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 27.441762128s. [links {\n  description: \"Learn more about Gemini API quotas\"\n  url: \"https://ai.google.dev/gemini-api/docs/rate-limits\"\n}\n, violations {\n  quota_metric: \"generativelanguage.googleapis.com/generate_content_free_tier_requests\"\n  quota_id: \"GenerateRequestsPerDayPerProjectPerModel-FreeTier\"\n  quota_dimensions {\n    key: \"model\"\n    value: \"gemini-3.5-flash\"\n  }\n  quota_dimensions {\n    key: \"location\"\n    value: \"global\"\n  }\n  quota_value: 20\n}\n, retry_delay {\n  seconds: 27\n}\n]"
+      },
+      "passed": false,
+      "reason": "Expected 49\u00b10, got 429.0",
+      "failure_mode": "none"
+    }
+  ]
+}

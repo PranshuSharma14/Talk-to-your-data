@@ -1,0 +1,197 @@
+[
+  {
+    "id": "Q1",
+    "question": "How many customers are there?",
+    "category": "simple_lookup",
+    "expected_answer": {
+      "type": "numeric",
+      "value": 59,
+      "tolerance": 0
+    },
+    "expected_sql_pattern": {
+      "must_include": ["Customer"],
+      "aggregation": "COUNT"
+    }
+  },
+  {
+    "id": "Q2",
+    "question": "List the 5 longest tracks by duration.",
+    "category": "sort_limit",
+    "expected_answer": {
+      "type": "list",
+      "min_items": 5,
+      "must_contain": ["Occupation", "Through a Looking Glass"]
+    },
+    "expected_sql_pattern": {
+      "must_include": ["Track"],
+      "should_not": ["Invoice", "Customer"],
+      "aggregation": null
+    }
+  },
+  {
+    "id": "Q3",
+    "question": "What is the total revenue by country?",
+    "category": "group_aggregate",
+    "expected_answer": {
+      "type": "list",
+      "min_items": 3,
+      "must_contain": ["USA", "Canada", "Brazil"]
+    },
+    "expected_sql_pattern": {
+      "must_include": ["Invoice", "Customer"],
+      "aggregation": "SUM"
+    }
+  },
+  {
+    "id": "Q4",
+    "question": "Which genre has the most tracks?",
+    "category": "join_aggregate",
+    "expected_answer": {
+      "type": "categorical",
+      "expected_values": ["Rock"]
+    },
+    "expected_sql_pattern": {
+      "must_include": ["Track", "Genre"],
+      "aggregation": "COUNT"
+    }
+  },
+  {
+    "id": "Q5",
+    "question": "What are the top 3 albums with the most tracks?",
+    "category": "group_aggregate",
+    "expected_answer": {
+      "type": "list",
+      "min_items": 3,
+      "must_contain": ["Greatest Hits"]
+    },
+    "expected_sql_pattern": {
+      "must_include": ["Album", "Track"],
+      "aggregation": "COUNT"
+    }
+  },
+  {
+    "id": "Q6",
+    "question": "How much revenue was generated in 2013?",
+    "category": "filter_aggregate",
+    "expected_answer": {
+      "type": "numeric",
+      "value": 450.58,
+      "tolerance": 1
+    },
+    "expected_sql_pattern": {
+      "must_include": ["Invoice"],
+      "aggregation": "SUM"
+    }
+  },
+  {
+    "id": "Q7",
+    "question": "Which customer has spent the most money?",
+    "category": "join_aggregate",
+    "expected_answer": {
+      "type": "categorical",
+      "expected_values": ["Helena Holý", "Helena Holy"]
+    },
+    "expected_sql_pattern": {
+      "must_include": ["Customer", "Invoice"],
+      "aggregation": "SUM"
+    },
+    "failure_mode": "value_format_mismatch"
+  },
+  {
+    "id": "Q8",
+    "question": "How many employees are there in the Sales department?",
+    "category": "filter_aggregate",
+    "expected_answer": {
+      "type": "numeric",
+      "value": 3,
+      "tolerance": 0
+    },
+    "expected_sql_pattern": {
+      "must_include": ["Employee"],
+      "aggregation": "COUNT"
+    }
+  },
+  {
+    "id": "Q9",
+    "question": "Who is our best customer?",
+    "category": "ambiguous",
+    "expected_answer": {
+      "type": "ambiguous",
+      "must_state_assumption": true,
+      "possible_assumptions": ["highest spending", "most purchases", "most recent"]
+    }
+  },
+  {
+    "id": "Q10",
+    "question": "What is the profit margin on each album?",
+    "category": "unanswerable",
+    "expected_answer": {
+      "type": "unanswerable",
+      "reason": "No cost data exists in the database"
+    }
+  },
+  {
+    "id": "Q11",
+    "question": "How many tracks were streamed last month?",
+    "category": "unanswerable",
+    "expected_answer": {
+      "type": "unanswerable",
+      "reason": "Database only contains sales data, not streaming data"
+    }
+  },
+  {
+    "id": "Q12",
+    "question": "Which country has the most customers?",
+    "category": "group_aggregate",
+    "expected_answer": {
+      "type": "categorical",
+      "expected_values": ["USA"]
+    },
+    "expected_sql_pattern": {
+      "must_include": ["Customer"],
+      "aggregation": "COUNT"
+    }
+  },
+  {
+    "id": "Q13",
+    "question": "How many Rock genre tracks are there?",
+    "category": "filter_aggregate",
+    "expected_answer": {
+      "type": "numeric",
+      "value": 1297,
+      "tolerance": 0
+    },
+    "expected_sql_pattern": {
+      "must_include": ["Track", "Genre"],
+      "aggregation": "COUNT"
+    }
+  },
+  {
+    "id": "Q14",
+    "question": "What is the average track length in minutes?",
+    "category": "calculation",
+    "expected_answer": {
+      "type": "numeric",
+      "value": 6.5,
+      "tolerance": 0.5
+    },
+    "expected_sql_pattern": {
+      "must_include": ["Track"],
+      "aggregation": "AVG"
+    }
+  },
+  {
+    "id": "Q15",
+    "question": "How many customers don't have a company listed?",
+    "category": "null_handling",
+    "expected_answer": {
+      "type": "numeric",
+      "value": 49,
+      "tolerance": 0
+    },
+    "expected_sql_pattern": {
+      "must_include": ["Customer"],
+      "aggregation": "COUNT"
+    }
+  }
+]

@@ -1,6 +1,6 @@
 fastapi==0.115.0
 uvicorn==0.30.0
-google-genai>=2.14.0
+google-generativeai==0.8.3
 sqlparse==0.5.1
 python-dotenv==1.0.1
 pydantic>=2.12.5

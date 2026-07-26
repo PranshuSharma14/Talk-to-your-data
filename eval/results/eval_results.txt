@@ -1,0 +1,93 @@
+EVALUATION RESULTS
+================================================================================
+
+Overall: 8/15 passed (53.3%)
+
+✅ PASS Q1: How many customers are there?
+  Category: simple_lookup
+  Result: Correct: 59.0
+  Answer: There are 59 customers.
+
+❌ FAIL Q2: List the 5 longest tracks by duration.
+  Category: sort_limit
+  Result: Only found 2/5 required items
+  Answer: The 5 longest tracks by duration are:
+
+1. **Occupation / Precipice** – 5,286,953 milliseconds
+2. **Through a Looking Glass** – 5,088,838 milliseconds
+3. **Greetings from Earth, Pt. 1** – 2,960,293 mil
+
+✅ PASS Q3: What is the total revenue by country?
+  Category: group_aggregate
+  Result: Found 3/3 expected items
+  Answer: Interpreting "country" as the billing country from the Invoice table, the total revenue by country is as follows:
+
+*   **USA**: $523.06
+*   **Canada**: $303.96
+*   **France**: $195.10
+*   **Brazil**: 
+
+✅ PASS Q4: Which genre has the most tracks?
+  Category: join_aggregate
+  Result: Found: Rock
+  Answer: The genre with the most tracks is Rock, with a total of 1,297 tracks.
+
+❌ FAIL Q5: What are the top 3 albums with the most tracks?
+  Category: group_aggregate
+  Result: Only found 1/3 required items
+  Answer: The top 3 albums with the most tracks are:
+
+1. **Greatest Hits** with 57 tracks
+2. **Minha Historia** with 34 tracks
+3. **Unplugged** with 30 tracks
+
+❌ FAIL Q6: How much revenue was generated in 2013?
+  Category: filter_aggregate
+  Result: Expected 450.58±1, got 2013.0
+  Answer: Assuming "revenue generated in 2013" refers to the sum of invoice totals with an invoice date in the year 2013, no matching data was found in the database.
+
+✅ PASS Q7: Which customer has spent the most money?
+  Category: join_aggregate
+  Result: Found: Helena Holý
+  Answer: Interpreting "spent the most money" as the sum of all invoice totals for each customer, Helena Holý (Customer ID 6) has spent the most money, with a total of $49.62.
+
+❌ FAIL Q8: How many employees are there in the Sales department?
+  Category: filter_aggregate
+  Result: Expected 3±0, got 4.0
+  Answer: Interpreting the "Sales department" as employees whose job title contains "Sales", there are 4 employees.
+
+✅ PASS Q9: Who is our best customer?
+  Category: ambiguous
+  Result: Assumption stated
+  Answer: Interpreting "best customer" as the customer with the highest total spending, our best customer is Helena Holý (Customer ID 6) with a total spending of 49.62.
+
+✅ PASS Q10: What is the profit margin on each album?
+  Category: unanswerable
+  Result: Correctly declined
+  Answer: This question cannot be answered with the available data. The database does not contain information about the cost of tracks or albums, which is required to calculate profit margins. We only have sell
+
+✅ PASS Q11: How many tracks were streamed last month?
+  Category: unanswerable
+  Result: Correctly declined
+  Answer: This question cannot be answered with the available data. The database does not contain any information about streaming counts, plays, or downloads of tracks, nor does it track streaming history over 
+
+✅ PASS Q12: Which country has the most customers?
+  Category: group_aggregate
+  Result: Found: USA
+  Answer: An unexpected error occurred: RATE_LIMIT_EXCEEDED: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/g
+
+❌ FAIL Q13: How many Rock genre tracks are there?
+  Category: filter_aggregate
+  Result: Expected 1297±0, got 429.0
+  Answer: An unexpected error occurred: RATE_LIMIT_EXCEEDED: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/g
+
+❌ FAIL Q14: What is the average track length in minutes?
+  Category: calculation
+  Result: Expected 6.5±0.5, got 429.0
+  Answer: An unexpected error occurred: RATE_LIMIT_EXCEEDED: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/g
+
+❌ FAIL Q15: How many customers don't have a company listed?
+  Category: null_handling
+  Result: Expected 49±0, got 429.0
+  Answer: An unexpected error occurred: RATE_LIMIT_EXCEEDED: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/g
+
