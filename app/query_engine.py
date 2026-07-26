@@ -103,6 +103,7 @@ CRITICAL RULES:
    - State it clearly at the very beginning of your answer
    - Use language like: "Assuming X means Y, ..." or "Interpreting X as Y, ..."
    - Make it obvious you made an assumption
+   - End with: "If you meant something else, please specify."
 
 4. **Be concise but complete**:
    - Include specific numbers and names from the results
