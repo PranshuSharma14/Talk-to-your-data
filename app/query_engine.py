@@ -38,16 +38,45 @@ generate a SQLite-compatible SELECT query to answer the question.
 DATABASE SCHEMA:
 {schema}
 
-RULES (follow these EXACTLY):
-1. Generate ONLY a single SELECT query. Never generate INSERT, UPDATE, DELETE, DROP, or any other statement.
-2. Use ONLY tables and columns that exist in the schema above. Do NOT invent columns.
-3. If the question CANNOT be answered with the available data (e.g., asks about profit, cost, ratings, or data that doesn't exist in any table), respond with EXACTLY:
-   UNANSWERABLE: [brief reason why the data doesn't exist]
-4. If the question is AMBIGUOUS (e.g., "best customer" could mean highest spending or most orders), generate the query using your best interpretation BUT add a SQL comment explaining your assumption:
-   -- ASSUMPTION: [what you assumed and why or ask user to clearly describe]
-5. Always use table aliases for readability in JOINs.
-6. Use appropriate aggregation (COUNT, SUM, AVG) when the question implies it.
-7. Return ONLY the SQL query (or UNANSWERABLE response). No explanations, no markdown, no code blocks.
+CRITICAL RULES (follow these EXACTLY):
+
+1. **ONLY SELECT queries**: Generate ONLY a single SELECT query. Never generate INSERT, UPDATE, DELETE, DROP, or any other statement.
+
+2. **Use ONLY existing columns**: Use ONLY tables and columns that exist in the schema above. Do NOT invent columns.
+
+3. **UNANSWERABLE detection**: If the question CANNOT be answered with available data, respond with EXACTLY:
+   UNANSWERABLE: [clear reason why the data doesn't exist]
+   
+   Common unanswerable questions include:
+   - Profit, cost, margins, expenses (we only have prices/totals, not costs)
+   - Ratings, reviews, quality scores (not in schema)
+   - Streaming counts, plays, downloads (not tracked)
+   - Time-based data not in schema (e.g., "last month" when no date range exists)
+   - Future predictions or forecasts
+   - External data not in database
+
+4. **AMBIGUITY handling**: If the question is AMBIGUOUS (multiple valid interpretations), you MUST:
+   a) Generate the query using your most reasonable interpretation
+   b) Add a SQL comment at the TOP explaining your assumption:
+      -- ASSUMPTION: Interpreting "best" as "highest total spending" (could also mean most orders or most recent)
+   
+   Common ambiguous terms:
+   - "best" → could mean highest revenue, most orders, most recent, highest rated
+   - "popular" → could mean most sold, highest revenue, most artists
+   - "top" → clarify the metric (revenue, quantity, duration)
+   - "active" → define what makes someone active
+   - "recent" → specify the time window
+
+5. **Be specific in assumptions**: When stating assumptions, be explicit about:
+   - What metric you chose (e.g., "total spending in dollars")
+   - What you excluded or included (e.g., "all purchases, not just recent")
+   - Any sorting or filtering decisions
+
+6. **Technical requirements**:
+   - Always use table aliases for readability in JOINs
+   - Use appropriate aggregation (COUNT, SUM, AVG, MAX, MIN)
+   - Return ONLY the SQL query (or UNANSWERABLE response)
+   - No explanations, no markdown code blocks, no extra text
 
 USER QUESTION: {question}
 
@@ -61,13 +90,32 @@ SQL QUERY: {sql}
 RESULTS: {rows}
 {assumption_text}
 
-RULES:
-1. ONLY use the data provided in RESULTS. Do NOT make up or estimate any numbers.
-2. If the results are empty, say "No matching data was found."
-3. Be concise but complete. Include specific numbers and names from the results.
-4. If there was an ASSUMPTION made, clearly state it at the beginning of your answer.
-5. Format large numbers with commas for readability (e.g., 1,234.56).
-6. Do NOT include the SQL query in your answer — it's shown separately.
+CRITICAL RULES:
+
+1. **Use ONLY actual data**: ONLY use the data provided in RESULTS. Do NOT make up, estimate, or infer any numbers not present.
+
+2. **Empty results**: If the results are empty, say "No matching data was found in the database."
+
+3. **Acknowledge assumptions FIRST**: If there was an ASSUMPTION made (shown above), you MUST:
+   - State it clearly at the very beginning of your answer
+   - Use language like: "Assuming X means Y, ..." or "Interpreting X as Y, ..."
+   - Make it obvious you made an assumption
+
+4. **Be concise but complete**:
+   - Include specific numbers and names from the results
+   - Format large numbers with commas (e.g., 1,234.56)
+   - Use appropriate units (e.g., dollars, tracks, customers)
+
+5. **Honesty over guessing**:
+   - If results seem incomplete or unusual, state that
+   - Don't extrapolate beyond what the data shows
+   - Stick to what can be proven from the RESULTS
+
+6. **Formatting**:
+   - Do NOT include the SQL query in your answer (it's shown separately)
+   - Use clear, conversational language
+   - For single numbers, state them directly
+   - For lists, present them naturally
 
 ANSWER:"""
 
