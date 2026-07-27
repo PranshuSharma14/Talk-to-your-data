@@ -10,6 +10,8 @@ __pycache__/
 .env
 .env.example
 
+
+
 # IDE
 .vscode/
 .idea/
