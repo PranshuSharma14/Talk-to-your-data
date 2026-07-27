@@ -20,7 +20,7 @@ from app.config import GEMINI_API_KEY
 genai.configure(api_key=GEMINI_API_KEY)
 
 # Model to use - using the stable google-generativeai package
-MODEL_NAME = "gemini-3.5-flash"
+MODEL_NAME = "gemini-3.6-flash"
 
 
 def call_llm(prompt: str, temperature: float = 0.0, max_retries: int = 3) -> str:
